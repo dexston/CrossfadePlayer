@@ -159,9 +159,7 @@ class MainView: UIView {
     }
     
     func updateButton(_ button: PlayerButton) {
-        DispatchQueue.main.async {
-            button.currentState = .filled
-        }
+        button.currentState = .filled
     }
     
 }

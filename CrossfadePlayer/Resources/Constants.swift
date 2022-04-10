@@ -18,8 +18,4 @@ struct K {
         static let firstSound = "First sound"
         static let secondSound = "Second sound"
     }
-    
-    struct AudioExtension {
-        static let mp3 = "mp3"
-    }
 }

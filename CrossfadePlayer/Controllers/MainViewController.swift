@@ -47,7 +47,7 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewDelegate {
     
     func soundButtonPressed(sender: PlayerButton) {
-        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.mp3])
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.audio])
         documentPicker.delegate = self
         documentPicker.allowsMultipleSelection = false
         present(documentPicker, animated: true) {
