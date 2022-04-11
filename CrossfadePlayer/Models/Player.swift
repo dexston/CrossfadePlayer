@@ -1,5 +1,5 @@
 //
-//  PlayerModel.swift
+//  Player.swift
 //  CrossfadePlayer
 //
 //  Created by Admin on 08.04.2022.
@@ -27,7 +27,6 @@ class Player {
     }
     
     func playWithFade(for fadeDuration: Double) {
-        //guard let player = player else { return }
         player.volume = .zero
         player.play()
         player.setVolume(1.0, fadeDuration: fadeDuration)

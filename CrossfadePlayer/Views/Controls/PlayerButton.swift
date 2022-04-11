@@ -12,9 +12,9 @@ class PlayerButton: UIButton {
     var currentState: ButtonState = .empty {
         didSet {
             switch currentState {
-            case .play, .empty:
+            case .playing, .empty:
                 isSelected = false
-            case .stop, .filled:
+            case .stopped, .filled:
                 isSelected = true
             }
         }
@@ -38,8 +38,8 @@ class PlayerButton: UIButton {
 }
 
 enum ButtonState {
-    case play
-    case stop
+    case playing
+    case stopped
     case empty
     case filled
 }

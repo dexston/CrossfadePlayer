@@ -44,6 +44,11 @@ class MainViewController: UIViewController {
         }
     }
     
+    private func showAlert(with error: K.Error) {
+        let alert = UIAlertController(title: nil, message: error.rawValue, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 extension MainViewController: MainViewDelegate {
@@ -73,7 +78,7 @@ extension MainViewController: PlayerManagerDelegate {
     }
     
     func errorThrown(_ error: K.Error) {
-        mainView.showErrorWarning(error)
+        showAlert(with: error)
     }
 }
 

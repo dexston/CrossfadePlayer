@@ -10,6 +10,7 @@ import UIKit
 protocol MainViewDelegate: AnyObject {
     func soundButtonPressed(sender: PlayerButton)
     func playButtonPressed()
+    func errorThrown(_ error: K.Error)
 }
 
 class MainView: UIView {
@@ -60,7 +61,7 @@ class MainView: UIView {
     
     private let playButton: PlayerButton = {
         let button = PlayerButton()
-        button.currentState = .stop
+        button.currentState = .stopped
         button.setTitle(K.Button.play, for: .normal)
         return button
     }()
@@ -111,7 +112,9 @@ class MainView: UIView {
             fadeValueLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
             //PlayButton
             playButton.topAnchor.constraint(equalTo: fadeValueLabel.bottomAnchor, constant: K.padding),
-            playButton.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor)
+            playButton.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
+            playButton.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.1),
+            playButton.widthAnchor.constraint(equalTo: playButton.heightAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
     }
@@ -119,15 +122,15 @@ class MainView: UIView {
     private func addActions() {
         
         firstAudioButton.addAction(UIAction(handler: {[unowned self] _ in
-            if playButton.currentState == .play {
-                showErrorWarning(.stopPlayerFirst)
+            if playButton.currentState == .playing {
+                self.delegate?.errorThrown(.stopPlayerFirst)
             } else {
                 self.delegate?.soundButtonPressed(sender: self.firstAudioButton)
             }
         }), for: .touchUpInside)
         secondAudioButton.addAction(UIAction(handler: {[unowned self] _ in
-            if playButton.currentState == .play {
-                showErrorWarning(.stopPlayerFirst)
+            if playButton.currentState == .playing {
+                self.delegate?.errorThrown(.stopPlayerFirst)
             } else {
                 self.delegate?.soundButtonPressed(sender: self.secondAudioButton)
             }
@@ -148,10 +151,10 @@ class MainView: UIView {
     func toggleButtonsState(_ value: Bool) {
         if value {
             playButton.setTitle(K.Button.stop, for: .normal)
-            playButton.currentState = .play
+            playButton.currentState = .playing
         } else {
             playButton.setTitle(K.Button.play, for: .normal)
-            playButton.currentState = .stop
+            playButton.currentState = .stopped
         }
         fadeSlider.isEnabled = !value
     }
@@ -159,19 +162,7 @@ class MainView: UIView {
     func updateSoundButton(_ button: PlayerButton, with name: String) {
         button.currentState = .filled
         button.setTitle(name, for: .normal)
-    }
-    
-    func showErrorWarning(_ error: K.Error) {
-        switch error {
-        case .noAudio:
-            print("No Audio")
-        case .shortSoundDuration:
-            print("Short sound duration")
-        case .stopPlayerFirst:
-            print("Stop player first")
-        }
-    }
-    
+    }    
 }
 
 extension UIView {

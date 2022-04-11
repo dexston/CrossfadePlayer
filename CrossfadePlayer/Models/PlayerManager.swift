@@ -55,7 +55,7 @@ class PlayerManager {
         
         firstPlayer.prepare(with: firstUrl)
         secondPlayer.prepare(with: secondUrl)
-        //"Один из треков короче угасания. Уменьшите угасание, либо выберите другой трек"
+        
         if checkDuration() {
             play()
             isPlaying = true
