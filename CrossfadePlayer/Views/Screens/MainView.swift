@@ -16,8 +16,8 @@ class MainView: UIView {
     
     weak var delegate: MainViewDelegate?
     
-    var sliderValue: Float {
-        fadeSlider.value
+    var fadeSliderValue: Double {
+        Double(fadeSlider.value)
     }
 
     private let titleLabel: UILabel = {
@@ -31,14 +31,12 @@ class MainView: UIView {
     
     let firstAudioButton: PlayerButton = {
         let button = PlayerButton()
-        button.currentState = .empty
         button.setTitle(K.Button.firstSound, for: .normal)
         return button
     }()
     
     let secondAudioButton: PlayerButton = {
         let button = PlayerButton()
-        button.currentState = .empty
         button.setTitle(K.Button.secondSound, for: .normal)
         return button
     }()
@@ -86,7 +84,7 @@ class MainView: UIView {
         addSubview(fadeSlider)
         addSubview(fadeValueLabel)
         addSubview(playButton)
-        fadeValueLabel.text = String(format: "%.f", sliderValue)
+        fadeValueLabel.text = String(format: "%.f", fadeSlider.value)
         let safeArea = safeAreaLayoutGuide
         let constraints = [
             //TitleLabel
@@ -97,17 +95,17 @@ class MainView: UIView {
             //FirstButton
             firstAudioButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: K.padding),
             firstAudioButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: K.padding),
-            firstAudioButton.trailingAnchor.constraint(equalTo: secondAudioButton.leadingAnchor, constant: -K.padding),
+            firstAudioButton.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -K.padding),
             firstAudioButton.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.1),
             //SecondButton
-            secondAudioButton.topAnchor.constraint(equalTo: firstAudioButton.topAnchor),
-            secondAudioButton.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -K.padding),
-            secondAudioButton.bottomAnchor.constraint(equalTo: firstAudioButton.bottomAnchor),
-            secondAudioButton.widthAnchor.constraint(equalTo: firstAudioButton.widthAnchor),
+            secondAudioButton.leadingAnchor.constraint(equalTo: firstAudioButton.leadingAnchor),
+            secondAudioButton.topAnchor.constraint(equalTo: firstAudioButton.bottomAnchor, constant: K.padding),
+            secondAudioButton.trailingAnchor.constraint(equalTo: firstAudioButton.trailingAnchor),
+            secondAudioButton.heightAnchor.constraint(equalTo: firstAudioButton.heightAnchor),
             //FadeSlider
-            fadeSlider.leadingAnchor.constraint(equalTo: firstAudioButton.leadingAnchor),
+            fadeSlider.leadingAnchor.constraint(equalTo: secondAudioButton.leadingAnchor),
             fadeSlider.trailingAnchor.constraint(equalTo: secondAudioButton.trailingAnchor),
-            fadeSlider.topAnchor.constraint(equalTo: firstAudioButton.bottomAnchor, constant: K.padding),
+            fadeSlider.topAnchor.constraint(equalTo: secondAudioButton.bottomAnchor, constant: K.padding),
             //FadeValue
             fadeValueLabel.topAnchor.constraint(equalTo: fadeSlider.bottomAnchor),
             fadeValueLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
@@ -122,14 +120,14 @@ class MainView: UIView {
         
         firstAudioButton.addAction(UIAction(handler: {[unowned self] _ in
             if playButton.currentState == .play {
-                print("Stop player first")
+                showErrorWarning(.stopPlayerFirst)
             } else {
                 self.delegate?.soundButtonPressed(sender: self.firstAudioButton)
             }
         }), for: .touchUpInside)
         secondAudioButton.addAction(UIAction(handler: {[unowned self] _ in
             if playButton.currentState == .play {
-                print("Stop player first")
+                showErrorWarning(.stopPlayerFirst)
             } else {
                 self.delegate?.soundButtonPressed(sender: self.secondAudioButton)
             }
@@ -139,7 +137,7 @@ class MainView: UIView {
             self.fadeSlider.setValue(roundf(self.fadeSlider.value), animated: true)
         }), for: .touchUpInside)
         fadeSlider.addAction(UIAction(handler: {[unowned self] _ in
-            self.fadeValueLabel.text = String(format: "%.f", self.sliderValue)
+            self.fadeValueLabel.text = String(format: "%.f", self.fadeSlider.value)
         }), for: .valueChanged)
         
         playButton.addAction(UIAction(handler: {[unowned self] _ in
@@ -158,8 +156,20 @@ class MainView: UIView {
         fadeSlider.isEnabled = !value
     }
     
-    func updateButton(_ button: PlayerButton) {
+    func updateSoundButton(_ button: PlayerButton, with name: String) {
         button.currentState = .filled
+        button.setTitle(name, for: .normal)
+    }
+    
+    func showErrorWarning(_ error: K.Error) {
+        switch error {
+        case .noAudio:
+            print("No Audio")
+        case .shortSoundDuration:
+            print("Short sound duration")
+        case .stopPlayerFirst:
+            print("Stop player first")
+        }
     }
     
 }

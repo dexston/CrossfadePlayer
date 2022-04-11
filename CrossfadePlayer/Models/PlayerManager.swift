@@ -9,26 +9,26 @@ import Foundation
 import AVFoundation
 
 protocol PlayerManagerDelegate: AnyObject {
-    func toggleButtons(_ value: Bool)
+    func playerStateChanged(_ value: Bool)
+    func errorThrown(_ error: K.Error)
 }
 
 class PlayerManager {
     
     weak var delegate: PlayerManagerDelegate?
     
-    private var firstPlayer = PlayerModel()
-    private var secondPlayer = PlayerModel()
+    private var firstPlayer = Player()
+    private var secondPlayer = Player()
     
-    private var fadeOutTimer: Timer?
-    private var secondSoundTimer: Timer?
+    private var nextSoundTimer: Timer?
     
     private var globalTimer: Timer?
     
-    var fadeDuration: Double?
+    private var fadeDuration: Double = .zero
     
     var isPlaying: Bool = false {
         didSet {
-            delegate?.toggleButtons(isPlaying)
+            delegate?.playerStateChanged(isPlaying)
         }
     }
     
@@ -40,60 +40,55 @@ class PlayerManager {
         secondPlayer.sound = url
     }
     
-    func prepareAndPlay() {
+    func startPlaying(fadeDuration: Double) {
         
         guard
             let firstUrl = firstPlayer.sound,
             let secondUrl = secondPlayer.sound
         else {
-            print("No audio")
+            //"Вы не выбрали трек"
+            delegate?.errorThrown(.noAudio)
             return
         }
         
+        self.fadeDuration = fadeDuration
+        
         firstPlayer.prepare(with: firstUrl)
         secondPlayer.prepare(with: secondUrl)
-        
-        play()
-        isPlaying = true
-    }
-    
-    private func playWithFade(for fadeDuration: Double, on player: AVAudioPlayer) {
-        player.volume = 0.0
-        player.play()
-        player.setVolume(1.0, fadeDuration: fadeDuration)
-        fadeOutTimer = Timer.scheduledTimer(withTimeInterval: player.duration - fadeDuration, repeats: false) { _ in
-            player.setVolume(0.0, fadeDuration: fadeDuration)
+        //"Один из треков короче угасания. Уменьшите угасание, либо выберите другой трек"
+        if checkDuration() {
+            play()
+            isPlaying = true
+        } else {
+            delegate?.errorThrown(.shortSoundDuration)
         }
     }
     
     private func play() {
-        
-        guard
-            let firstPlayer = firstPlayer.player,
-            let secondPlayer = secondPlayer.player,
-            let fadeDuration = fadeDuration
-        else {
-            return
-        }
 
-        playWithFade(for: fadeDuration, on: firstPlayer)
-        secondSoundTimer = Timer.scheduledTimer(withTimeInterval: firstPlayer.duration - fadeDuration, repeats: false) { _ in
-            self.playWithFade(for: fadeDuration, on: secondPlayer)
+        firstPlayer.playWithFade(for: fadeDuration)
+        
+        let fadeOutTime = firstPlayer.duration - fadeDuration
+        nextSoundTimer = Timer.scheduledTimer(withTimeInterval: fadeOutTime, repeats: false) {[unowned self] _ in
+            self.secondPlayer.playWithFade(for: self.fadeDuration)
         }
         let globalDuration = firstPlayer.duration + secondPlayer.duration - 2 * fadeDuration
-        globalTimer = Timer.scheduledTimer(withTimeInterval: globalDuration, repeats: false, block: { _ in
-            if self.isPlaying == true {
+        globalTimer = Timer.scheduledTimer(withTimeInterval: globalDuration, repeats: false, block: {[unowned self] _ in
+            if self.isPlaying {
                 self.play()
             }
         })
     }
     
     func stop() {
-        firstPlayer.player?.stop()
-        secondPlayer.player?.stop()
-        fadeOutTimer?.invalidate()
-        secondSoundTimer?.invalidate()
+        firstPlayer.stop()
+        secondPlayer.stop()
+        nextSoundTimer?.invalidate()
         globalTimer?.invalidate()
         isPlaying = false
+    }
+    
+    private func checkDuration() -> Bool {
+        (firstPlayer.duration >= 2 * fadeDuration && secondPlayer.duration >= 2 * fadeDuration)
     }
 }

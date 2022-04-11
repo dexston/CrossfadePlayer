@@ -9,11 +9,12 @@ import UIKit
 
 class PlayerButton: UIButton {
 
-    var currentState: ButtonState = .none {
+    var currentState: ButtonState = .empty {
         didSet {
-            if currentState == .empty || currentState == .play {
+            switch currentState {
+            case .play, .empty:
                 isSelected = false
-            } else if currentState == .filled || currentState == .stop {
+            case .stop, .filled:
                 isSelected = true
             }
         }
@@ -41,5 +42,4 @@ enum ButtonState {
     case stop
     case empty
     case filled
-    case none
 }

@@ -18,4 +18,11 @@ struct K {
         static let firstSound = "First sound"
         static let secondSound = "Second sound"
     }
+    
+    enum Error {
+        case noAudio
+        case shortSoundDuration
+        case stopPlayerFirst
+    }
+    
 }
