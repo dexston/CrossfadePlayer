@@ -10,34 +10,46 @@ import AVFAudio
 
 class Player {
     
-    private var player = AVAudioPlayer()
+    private var player: AVAudioPlayer
     private var fadeOutTimer: Timer?
-    var sound: URL?
+    private let onFadeOutBegins: () -> Void
     
-    var duration: Double {
-        player.duration
-    }
-    
-    func prepare(with url: URL) {
+    init(url: URL, onFadeOutBegins: @escaping () -> Void) {
         do {
             player = try AVAudioPlayer(contentsOf: url)
         } catch {
+            player = AVAudioPlayer()
             print("Player preparation failed: \(error)")
         }
+        self.onFadeOutBegins = onFadeOutBegins
     }
     
-    func playWithFade(for fadeDuration: Double) {
+    deinit {
+        player.stop()
+        fadeOutTimer?.invalidate()
+    }
+    
+    func play(with fadeDuration: Double) {
+        let safeFadeDuration = safeFadeDuration(fadeDuration)
         player.volume = .zero
         player.play()
-        player.setVolume(1.0, fadeDuration: fadeDuration)
-        fadeOutTimer = Timer.scheduledTimer(withTimeInterval: player.duration - fadeDuration, repeats: false) {[weak self] _ in
+        player.setVolume(1.0, fadeDuration: safeFadeDuration)
+        fadeOutTimer = Timer.scheduledTimer(withTimeInterval: player.duration - safeFadeDuration, repeats: false) {[weak self] _ in
             guard let self = self else { return }
-            self.player.setVolume(.zero, fadeDuration: fadeDuration)
+            self.player.setVolume(.zero, fadeDuration: safeFadeDuration)
+            self.onFadeOutBegins()
         }
     }
     
     func stop() {
         player.stop()
         fadeOutTimer?.invalidate()
+    }
+    
+    private func safeFadeDuration(_ fadeDuration: Double) -> TimeInterval {
+        if player.duration < 2 * fadeDuration {
+            return player.duration / 2
+        }
+        return fadeDuration
     }
 }

@@ -33,14 +33,10 @@ class MainViewController: UIViewController {
     }
     
     private func addSoundUrl(_ url: URL) {
-        if soundButton == mainView.firstAudioButton {
-            playerManager.addFirstSound(from: url)
+        if let soundButton = soundButton {
+            playerManager.addSound(from: url)
             let soundName = url.lastPathComponent
-            mainView.updateSoundButton(mainView.firstAudioButton, with: soundName)
-        } else if soundButton == mainView.secondAudioButton {
-            playerManager.addSecondSound(from: url)
-            let soundName = url.lastPathComponent
-            mainView.updateSoundButton(mainView.secondAudioButton, with: soundName)
+            mainView.updateSoundButton(soundButton, with: soundName)
         }
     }
     
@@ -64,7 +60,7 @@ extension MainViewController: MainViewDelegate {
     
     func playButtonPressed() {
         if !playerManager.isPlaying {
-            playerManager.startPlaying(fadeDuration: mainView.fadeSliderValue)
+            playerManager.play(with: mainView.fadeSliderValue)
         } else {
             playerManager.stop()
         }

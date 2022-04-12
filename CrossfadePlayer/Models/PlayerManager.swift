@@ -17,14 +17,9 @@ class PlayerManager {
     
     weak var delegate: PlayerManagerDelegate?
     
-    private var firstPlayer = Player()
-    private var secondPlayer = Player()
-    
-    private var nextSoundTimer: Timer?
-    
-    private var globalTimer: Timer?
-    
-    private var fadeDuration: Double = .zero
+    private var currentPlayer: Player?
+    private var fadingPlayer: Player?
+    private var soundURLs: [URL] = []
     
     var isPlaying: Bool = false {
         didSet {
@@ -32,63 +27,39 @@ class PlayerManager {
         }
     }
     
-    func addFirstSound(from url: URL) {
-        firstPlayer.sound = url
-    }
-    
-    func addSecondSound(from url: URL) {
-        secondPlayer.sound = url
-    }
-    
-    func startPlaying(fadeDuration: Double) {
-        
-        guard
-            let firstUrl = firstPlayer.sound,
-            let secondUrl = secondPlayer.sound
-        else {
-            delegate?.errorThrown(.noAudio)
+    func addSound(from url: URL) {
+        guard !soundURLs.contains(url) else {
+            delegate?.errorThrown(.shortSoundDuration)
             return
         }
-        
-        self.fadeDuration = fadeDuration
-        
-        firstPlayer.prepare(with: firstUrl)
-        secondPlayer.prepare(with: secondUrl)
-        
-        if checkDuration() {
-            play()
-            isPlaying = true
-        } else {
-            delegate?.errorThrown(.shortSoundDuration)
-        }
+        soundURLs.append(url)
     }
     
-    private func play() {
-
-        firstPlayer.playWithFade(for: fadeDuration)
+    func play(with fadeDuration: Double) {
+        isPlaying = true
+        startRepeating(for: soundURLs, with: fadeDuration)
+    }
         
-        let fadeOutTime = firstPlayer.duration - fadeDuration
-        nextSoundTimer = Timer.scheduledTimer(withTimeInterval: fadeOutTime, repeats: false) {[unowned self] _ in
-            self.secondPlayer.playWithFade(for: self.fadeDuration)
+    private func startRepeating(for urls: [URL], with fadeDuration: TimeInterval) {
+        guard !urls.isEmpty else {
+            delegate?.errorThrown(.noAudio)
+            isPlaying = false
+            return
         }
-        
-        let globalDuration = firstPlayer.duration + secondPlayer.duration - 2 * fadeDuration
-        globalTimer = Timer.scheduledTimer(withTimeInterval: globalDuration, repeats: false, block: {[unowned self] _ in
-            if self.isPlaying {
-                self.play()
-            }
-        })
+        var urls = urls
+        let firstURL = urls.removeFirst()
+        urls.append(firstURL)
+        fadingPlayer = currentPlayer
+        currentPlayer = Player(url: firstURL) { [weak self] in
+            self?.startRepeating(for: urls, with: fadeDuration)
+        }
+        currentPlayer?.play(with: fadeDuration)
+        isPlaying = true
     }
     
     func stop() {
-        firstPlayer.stop()
-        secondPlayer.stop()
-        nextSoundTimer?.invalidate()
-        globalTimer?.invalidate()
+        fadingPlayer = nil
+        currentPlayer = nil
         isPlaying = false
-    }
-    
-    private func checkDuration() -> Bool {
-        (firstPlayer.duration >= 2 * fadeDuration && secondPlayer.duration >= 2 * fadeDuration)
     }
 }
