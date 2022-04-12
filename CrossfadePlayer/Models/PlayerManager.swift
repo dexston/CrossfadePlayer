@@ -46,7 +46,6 @@ class PlayerManager {
             let firstUrl = firstPlayer.sound,
             let secondUrl = secondPlayer.sound
         else {
-            //"Вы не выбрали трек"
             delegate?.errorThrown(.noAudio)
             return
         }
@@ -72,6 +71,7 @@ class PlayerManager {
         nextSoundTimer = Timer.scheduledTimer(withTimeInterval: fadeOutTime, repeats: false) {[unowned self] _ in
             self.secondPlayer.playWithFade(for: self.fadeDuration)
         }
+        
         let globalDuration = firstPlayer.duration + secondPlayer.duration - 2 * fadeDuration
         globalTimer = Timer.scheduledTimer(withTimeInterval: globalDuration, repeats: false, block: {[unowned self] _ in
             if self.isPlaying {

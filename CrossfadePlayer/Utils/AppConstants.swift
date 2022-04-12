@@ -10,9 +10,9 @@ import UIKit
 
 struct K {
     
-    static let title = "Crossfade player"
+    static let title = "Crossfade Player"
     static let padding = 15.0
-    static let currentFadeValue = "Current fade duration:  %.f"
+    static let currentFadeValue = "Current fade duration: %.f"
     
     struct Button {
         static let play = UIImage(systemName: "play.fill")

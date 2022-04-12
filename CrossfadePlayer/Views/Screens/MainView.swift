@@ -64,6 +64,7 @@ class MainView: UIView {
     private let fadeValueLabel: UILabel = {
         let label = UILabel()
         label.prepareForAutoLayout()
+        label.font = .preferredFont(forTextStyle: .subheadline)
         return label
     }()
     
@@ -130,7 +131,6 @@ class MainView: UIView {
             //FadeSlider
             fadeSlider.leadingAnchor.constraint(equalTo: secondAudioButton.leadingAnchor),
             fadeSlider.trailingAnchor.constraint(equalTo: secondAudioButton.trailingAnchor),
-            //FadeValue
             //PlayButton
             playButton.heightAnchor.constraint(equalTo: firstAudioButton.heightAnchor),
             playButton.widthAnchor.constraint(equalTo: playButton.heightAnchor)
