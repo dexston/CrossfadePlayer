@@ -20,6 +20,16 @@ class MainView: UIView {
     var fadeSliderValue: Double {
         Double(fadeSlider.value)
     }
+    
+    private let verticalStack: UIStackView = {
+        let stack = UIStackView()
+        stack.prepareForAutoLayout()
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.distribution = .fill
+        stack.spacing = K.padding
+        return stack
+    }()
 
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -45,81 +55,90 @@ class MainView: UIView {
     private let fadeSlider: UISlider = {
         let slider = UISlider()
         slider.prepareForAutoLayout()
-        slider.minimumValue = 2.0
-        slider.maximumValue = 10.0
-        slider.value = 2.0
+        slider.minimumValue = K.FadeSlider.minValue
+        slider.maximumValue = K.FadeSlider.maxValue
+        slider.value = K.FadeSlider.initialValue
         return slider
     }()
     
     private let fadeValueLabel: UILabel = {
         let label = UILabel()
         label.prepareForAutoLayout()
-        label.font = .preferredFont(forTextStyle: .body)
-        label.textAlignment = .center
+        label.font = .preferredFont(forTextStyle: .subheadline)
         return label
     }()
     
     private let playButton: PlayerButton = {
         let button = PlayerButton()
         button.currentState = .stopped
-        button.setTitle(K.Button.play, for: .normal)
+        button.setImage(K.Button.play, for: .normal)
         return button
+    }()
+    
+    private let emptyView: UIView = {
+        let view = UIView()
+        view.prepareForAutoLayout()
+        return view
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setupView()
+        setupMainView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        setupView()
+        setupMainView()
     }
 
-    private func setupView() {
-        addActions()
+    private func setupMainView() {
         backgroundColor = .systemBackground
-        addSubview(titleLabel)
-        addSubview(firstAudioButton)
-        addSubview(secondAudioButton)
-        addSubview(fadeSlider)
-        addSubview(fadeValueLabel)
-        addSubview(playButton)
-        fadeValueLabel.text = String(format: "%.f", fadeSlider.value)
-        let safeArea = safeAreaLayoutGuide
+        addSubview(verticalStack)
+        fadeValueLabel.text = String(format: K.currentFadeValue, fadeSlider.value)
+        setupStackView()
+        setupConstraints()
+        setupActions()
+    }
+    
+    private func setupStackView() {
+        verticalStack.addArrangedSubview(titleLabel)
+        verticalStack.addArrangedSubview(firstAudioButton)
+        verticalStack.addArrangedSubview(secondAudioButton)
+        verticalStack.addArrangedSubview(fadeValueLabel)
+        verticalStack.addArrangedSubview(fadeSlider)
+        verticalStack.addArrangedSubview(playButton)
+        verticalStack.addArrangedSubview(emptyView)
+        verticalStack.setCustomSpacing(2.0, after: fadeValueLabel)
+    }
+    
+    private func setupConstraints() {
         let constraints = [
+            //VerticalStack
+            verticalStack.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: K.padding),
+            verticalStack.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: K.padding),
+            verticalStack.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -K.padding),
+            verticalStack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor, constant: -K.padding),
             //TitleLabel
-            titleLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor),
-            titleLabel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: K.padding),
-            titleLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor),
-            titleLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
+            titleLabel.heightAnchor.constraint(equalTo: safeAreaLayoutGuide.heightAnchor, multiplier: 0.2),
             //FirstButton
-            firstAudioButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: K.padding),
-            firstAudioButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: K.padding),
-            firstAudioButton.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -K.padding),
-            firstAudioButton.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.1),
+            firstAudioButton.leadingAnchor.constraint(equalTo: verticalStack.leadingAnchor),
+            firstAudioButton.trailingAnchor.constraint(equalTo: verticalStack.trailingAnchor),
+            firstAudioButton.heightAnchor.constraint(equalTo: safeAreaLayoutGuide.heightAnchor, multiplier: 0.1),
             //SecondButton
             secondAudioButton.leadingAnchor.constraint(equalTo: firstAudioButton.leadingAnchor),
-            secondAudioButton.topAnchor.constraint(equalTo: firstAudioButton.bottomAnchor, constant: K.padding),
             secondAudioButton.trailingAnchor.constraint(equalTo: firstAudioButton.trailingAnchor),
             secondAudioButton.heightAnchor.constraint(equalTo: firstAudioButton.heightAnchor),
             //FadeSlider
             fadeSlider.leadingAnchor.constraint(equalTo: secondAudioButton.leadingAnchor),
             fadeSlider.trailingAnchor.constraint(equalTo: secondAudioButton.trailingAnchor),
-            fadeSlider.topAnchor.constraint(equalTo: secondAudioButton.bottomAnchor, constant: K.padding),
-            //FadeValue
-            fadeValueLabel.topAnchor.constraint(equalTo: fadeSlider.bottomAnchor),
-            fadeValueLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
             //PlayButton
-            playButton.topAnchor.constraint(equalTo: fadeValueLabel.bottomAnchor, constant: K.padding),
-            playButton.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
-            playButton.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.1),
+            playButton.heightAnchor.constraint(equalTo: firstAudioButton.heightAnchor),
             playButton.widthAnchor.constraint(equalTo: playButton.heightAnchor)
         ]
         NSLayoutConstraint.activate(constraints)
     }
     
-    private func addActions() {
+    private func setupActions() {
         
         firstAudioButton.addAction(UIAction(handler: {[unowned self] _ in
             if playButton.currentState == .playing {
@@ -140,7 +159,7 @@ class MainView: UIView {
             self.fadeSlider.setValue(roundf(self.fadeSlider.value), animated: true)
         }), for: .touchUpInside)
         fadeSlider.addAction(UIAction(handler: {[unowned self] _ in
-            self.fadeValueLabel.text = String(format: "%.f", self.fadeSlider.value)
+            self.fadeValueLabel.text = String(format: K.currentFadeValue, self.fadeSlider.value)
         }), for: .valueChanged)
         
         playButton.addAction(UIAction(handler: {[unowned self] _ in
@@ -150,10 +169,10 @@ class MainView: UIView {
     
     func toggleButtonsState(_ value: Bool) {
         if value {
-            playButton.setTitle(K.Button.stop, for: .normal)
+            playButton.setImage(K.Button.stop, for: .normal)
             playButton.currentState = .playing
         } else {
-            playButton.setTitle(K.Button.play, for: .normal)
+            playButton.setImage(K.Button.play, for: .normal)
             playButton.currentState = .stopped
         }
         fadeSlider.isEnabled = !value
@@ -162,7 +181,7 @@ class MainView: UIView {
     func updateSoundButton(_ button: PlayerButton, with name: String) {
         button.currentState = .filled
         button.setTitle(name, for: .normal)
-    }    
+    }
 }
 
 extension UIView {

@@ -40,5 +40,4 @@ class Player {
         player.stop()
         fadeOutTimer?.invalidate()
     }
-    
 }

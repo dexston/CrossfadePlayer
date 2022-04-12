@@ -33,6 +33,7 @@ class PlayerButton: UIButton {
     func setupView() {
         prepareForAutoLayout()
         configuration = .gray()
+        configuration?.cornerStyle = .large
     }
 
 }
