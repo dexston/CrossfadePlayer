@@ -16,6 +16,17 @@ class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        let notificationCenter = NotificationCenter.default
+        notificationCenter.addObserver(forName: UIApplication.willResignActiveNotification, object: nil, queue: .main) {[weak self] _ in
+            guard let self = self else { return }
+            self.playerManager.pause()
+        }
+        notificationCenter.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) {[weak self] _ in
+            guard let self = self else { return }
+            if self.playerManager.isPaused {
+                self.playerManager.resumeWith(fadeDuration: self.mainView.fadeSliderValue)
+            }
+        }
         setupView()
     }
 
@@ -60,9 +71,17 @@ extension MainViewController: MainViewDelegate {
     
     func playButtonPressed() {
         if !playerManager.isPlaying {
-            playerManager.play(with: mainView.fadeSliderValue)
+            playerManager.playWith(fadeDuration: mainView.fadeSliderValue)
         } else {
             playerManager.stop()
+        }
+    }
+    
+    func pauseButtonPressed() {
+        if !playerManager.isPlaying {
+            playerManager.resumeWith(fadeDuration: mainView.fadeSliderValue)
+        } else {
+            playerManager.pause()
         }
     }
 }

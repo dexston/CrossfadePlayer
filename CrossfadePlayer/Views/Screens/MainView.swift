@@ -10,6 +10,7 @@ import UIKit
 protocol MainViewDelegate: AnyObject {
     func soundButtonPressed(sender: PlayerButton)
     func playButtonPressed()
+    func pauseButtonPressed()
     func errorThrown(_ error: K.Error)
 }
 
@@ -75,6 +76,12 @@ class MainView: UIView {
         return button
     }()
     
+    private let pauseButton: PlayerButton = {
+        let button = PlayerButton()
+        button.setTitle("Pause", for: .normal)
+        return button
+    }()
+    
     private let emptyView: UIView = {
         let view = UIView()
         view.prepareForAutoLayout()
@@ -107,6 +114,7 @@ class MainView: UIView {
         verticalStack.addArrangedSubview(fadeValueLabel)
         verticalStack.addArrangedSubview(fadeSlider)
         verticalStack.addArrangedSubview(playButton)
+        verticalStack.addArrangedSubview(pauseButton)
         verticalStack.addArrangedSubview(emptyView)
         verticalStack.setCustomSpacing(2.0, after: fadeValueLabel)
     }
@@ -134,6 +142,7 @@ class MainView: UIView {
             //PlayButton
             playButton.heightAnchor.constraint(equalTo: firstAudioButton.heightAnchor),
             playButton.widthAnchor.constraint(equalTo: playButton.heightAnchor)
+            //PauseButton
         ]
         NSLayoutConstraint.activate(constraints)
     }
@@ -164,6 +173,10 @@ class MainView: UIView {
         
         playButton.addAction(UIAction(handler: {[unowned self] _ in
             self.delegate?.playButtonPressed()
+        }), for: .touchUpInside)
+        
+        pauseButton.addAction(UIAction(handler: { [unowned self] _ in
+            self.delegate?.pauseButtonPressed()
         }), for: .touchUpInside)
     }
     

@@ -19,6 +19,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.makeKeyAndVisible()
         return true
     }
+    
+    func applicationWillResignActive(_ application: UIApplication) {
+        print("Going to inactive")
+    }
+    
+    func applicationWillEnterForeground(_ application: UIApplication) {
+        print("Going to foreground")
+    }
 
 }
 

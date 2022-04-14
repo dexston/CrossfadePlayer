@@ -27,6 +27,8 @@ class PlayerManager {
         }
     }
     
+    var isPaused: Bool = false
+    
     func addSound(from url: URL) {
         guard !soundURLs.contains(url) else {
             delegate?.errorThrown(.shortSoundDuration)
@@ -35,7 +37,7 @@ class PlayerManager {
         soundURLs.append(url)
     }
     
-    func play(with fadeDuration: Double) {
+    func playWith(fadeDuration: Double) {
         isPlaying = true
         startRepeating(for: soundURLs, with: fadeDuration)
     }
@@ -54,12 +56,24 @@ class PlayerManager {
             self?.startRepeating(for: urls, with: fadeDuration)
         }
         currentPlayer?.play(with: fadeDuration)
-        isPlaying = true
     }
     
     func stop() {
         fadingPlayer = nil
         currentPlayer = nil
         isPlaying = false
+    }
+    
+    func pause() {
+        fadingPlayer = nil
+        currentPlayer?.pause()
+        isPlaying = false
+        isPaused = true
+    }
+    
+    func resumeWith(fadeDuration: Double) {
+        currentPlayer?.play(with: fadeDuration)
+        isPlaying = true
+        isPaused = false
     }
 }
