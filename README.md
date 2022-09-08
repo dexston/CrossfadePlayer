@@ -1,10 +1,14 @@
 # CrossfadePlayer
 
-![Swift](https://img.shields.io/badge/swift-F54A2A?style=for-the-badge&logo=swift&logoColor=white)
+### Аудио-плеер с плавным переходом между треками (crossfade)
 
-Audio player with simple crossfade effect
+---
+Язык: Swift  
+UI: Autolayout (в коде)  
+Архитектура: MVC  
+Зависимости: отсутствуют  
 
-## Features
+---
 
-- Select audiofiles from memory
-- Choose duration of fade-effect
+Тестовое задание.  
+Основной задачей было реализовать выбор двух аудио-файлов из памяти устройства, цикличное воспроизведение этих файлов последовательно друг за другом, с эффектом плавного затухания/возрастания громкости между ними.
